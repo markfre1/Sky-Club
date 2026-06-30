@@ -242,6 +242,10 @@
     *{transition:none!important;}
   }
   /* ---- Custom firm + add-firm modal ---- */
+  .stars{margin-top:6px;display:flex;align-items:center;gap:7px;font-size:15px;line-height:1;letter-spacing:1.5px;}
+  .stars-label{font-family:"Spline Sans Mono",monospace;font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);letter-spacing:.06em;}
+  .star-fill{color:var(--brass);}
+  .star-dim{color:#d8cfbb;}
   .role.custom{background:#e9e4d7;color:#6f6553;}
   .firm-remove{font-family:"Inter",sans-serif;font-size:11.5px;color:var(--board);background:none;border:none;cursor:pointer;text-decoration:underline;padding:0;margin-left:4px;}
   .firm-remove:hover{color:#6e3a30;}
@@ -295,6 +299,7 @@
       <span><b>Matter:</b> wrongful exclusion from the board · cumulative voting</span>
       <span><b>Venue:</b> Buncombe County, NC</span>
       <span><b>Excluded:</b> Allen Stahl + Kilbourne (declined — undisclosed conflict)</span>
+      <span style="color:var(--brass)"><b>&#9733;&#9733;&#9733;&#9733;&#9733;</b> = my fit rating (more stars = stronger, regardless of distance)</span>
     </div>
   </header>
 
@@ -413,26 +418,34 @@
 <script>
 const FIRMS = [
   // ---- Homeowner side ----
-  { id:"craig", side:"home", name:"Craig Law Firm, PLLC", atty:"Sam Craig",
+  { id:"craig", side:"home", stars:3, name:"Craig Law Firm, PLLC", atty:"Sam Craig",
     loc:"Asheville · 223 E. Chestnut St.", phone:"8284841595",
     role:["Strongest local","local"],
     meta:"Owner-oriented; handles HOA & real-estate disputes and litigates in state and federal court (HOA is one of several areas). Generalist solo — vet responsiveness on the first call." },
-  { id:"dunnuck", side:"home", name:"Dunnuck Law Firm, PLLC", atty:"Erin Dunnuck",
+  { id:"dunnuck", side:"home", stars:1, name:"Dunnuck Law Firm, PLLC", atty:"Erin Dunnuck",
     loc:"Asheville · One Oak Plaza, Ste. 315", phone:"8283486392",
     role:["Advisory only","advisory"],
     meta:"Real community-association depth, but her practice is built around representing boards. Useful for a document-review second opinion — not lead counsel against a board. Conflict check essential." },
-  { id:"thurman", side:"home", name:"Thurman, Wilson, Boutwell & Galvin, P.A.", atty:"",
+  { id:"thurman", side:"home", stars:5, name:"Thurman, Wilson, Boutwell & Galvin, P.A.", atty:"",
     loc:"Charlotte · ~2 hrs from Asheville", phone:"7043774164",
     role:["Strongest on merits","best"],
     meta:"Dedicated owner-side community-association litigation with firm depth and trial/appellate experience opposing associations. Distance is the only tradeoff — any NC attorney can appear in Buncombe County." },
-  { id:"robinson", side:"home", name:"Robinson & Lawing, LLP", atty:"",
+  { id:"robinson", side:"home", stars:4, name:"Robinson & Lawing, LLP", atty:"",
     loc:"Winston-Salem · ~2.5 hrs from Asheville", phone:"3366318500",
     role:["Owner-capable backup","backup"],
     meta:"Represents both homeowners and associations; offers local counsel for out-of-state owners. Solid backup; farthest of the four." },
-  { id:"lloyd", side:"home", name:"James Lloyd Law Office", atty:"James M. Lloyd",
+  { id:"lloyd", side:"home", stars:2, name:"James Lloyd Law Office", atty:"James M. Lloyd",
     loc:"Asheville · 75 Church St. (P.O. Box 948), 28802", phone:"8283501765",
-    role:["Local — verify orientation","local"],
-    meta:"Asheville solo (since 2000) doing condominium / HOA, real-property disputes, and construction litigation. His stated client base is planned communities, condos, HOAs, and developers — i.e., association/developer-leaning. Local and condo-savvy, but confirm he will take the owner side and has no conflict with Sky Club." },
+    role:["Local — vet orientation","local"],
+    meta:"Local option worth vetting. Asheville solo (since 2000) doing condominium / HOA, real-property disputes, and construction litigation. His stated client base is planned communities, condos, HOAs, and developers — i.e., association/developer-leaning. Local and condo-savvy, but confirm he will take the owner side and has no conflict with Sky Club." },
+  { id:"triangle", side:"home", stars:3, name:"Triangle Law Group", atty:"",
+    loc:"Raleigh · ~4 hrs from Asheville", phone:"9193010716",
+    role:["Owner-side · far","backup"],
+    meta:"One of the few NC firms that markets from the homeowner's side — helps owners challenge HOA/condo boards, through litigation if needed. Genuinely owner-oriented, but Raleigh-based, so a stretch for a Buncombe County matter (any NC attorney can appear statewide; weigh travel cost). Worth a call if closer owner-side options don't pan out." },
+  { id:"parton", side:"home", stars:4, name:"Parton Law, PLLC", atty:"Corey V. Parton",
+    loc:"Charlotte · 122 N. McDowell St. · ~2 hrs from Asheville", phone:"7043764488",
+    role:["Owner-side litigation","best"],
+    meta:"Charlotte civil-litigation firm with an explicitly homeowner-side HOA/POA dispute practice — frames disputes from the owner's side and pursues injunctive relief / declaratory judgment. Handles business, property, and shareholder litigation in state and federal court; Super Lawyers-recognized. Strong owner-side option (~2 hrs); confirm condo-governance and cumulative-voting experience on the call." },
 
   // ---- Board / association side ----
   { id:"vanwinkle", side:"board", name:"Van Winkle Law Firm", atty:"",
@@ -519,6 +532,7 @@ function cardHTML(f){
         ${phoneEl}
       </div>
       <div class="firm-loc">${f.loc||""} ${removeEl}</div>
+      ${f.stars?`<div class="stars" title="My fit rating for this matter, out of 5 — regardless of distance"><span class="stars-label">My fit rating</span> <span class="star-fill">${"\u2605".repeat(f.stars)}</span><span class="star-dim">${"\u2606".repeat(5-f.stars)}</span></div>`:""}
       <p class="meta"><span class="role ${f.role[1]}">${f.role[0]}</span>${metaLine}</p>
       <div class="controls">
         <div class="field">
