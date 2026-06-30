@@ -241,11 +241,46 @@
   @media (prefers-reduced-motion:reduce){
     *{transition:none!important;}
   }
+  /* ---- Custom firm + add-firm modal ---- */
+  .role.custom{background:#e9e4d7;color:#6f6553;}
+  .firm-remove{font-family:"Inter",sans-serif;font-size:11.5px;color:var(--board);background:none;border:none;cursor:pointer;text-decoration:underline;padding:0;margin-left:4px;}
+  .firm-remove:hover{color:#6e3a30;}
+  .modal-bg{position:fixed;inset:0;background:rgba(31,40,50,.45);display:none;align-items:flex-start;justify-content:center;z-index:50;padding:48px 16px;overflow:auto;}
+  .modal-bg.open{display:flex;}
+  .modal{background:var(--card);border:1px solid var(--rule);border-top:4px solid var(--navy);border-radius:5px;max-width:470px;width:100%;box-shadow:0 24px 60px rgba(31,40,50,.3);padding:22px 24px;}
+  .modal h3{font-family:"Fraunces",serif;font-weight:600;font-size:18px;margin:0 0 14px;color:var(--navy);}
+  .modal .mfield{margin-bottom:12px;}
+  .modal .mrow{display:flex;gap:12px;}
+  .modal .mrow .mfield{flex:1;min-width:0;}
+  .modal label{font-family:"Spline Sans Mono",monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:4px;}
+  .modal input[type=text],.modal select,.modal textarea{width:100%;font-family:"Inter",sans-serif;font-size:14px;color:var(--ink);background:#fff;border:1px solid var(--rule);border-radius:4px;padding:8px 10px;}
+  .modal textarea{resize:vertical;}
+  .modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:6px;}
+  .btn-primary{font-family:"Inter",sans-serif;font-size:14px;font-weight:500;color:#fff;background:var(--navy);border:none;border-radius:999px;padding:9px 18px;cursor:pointer;}
+  .btn-primary:hover{background:#16314f;}
+  .btn-ghost{font-family:"Inter",sans-serif;font-size:14px;color:var(--navy);background:none;border:1px solid var(--rule);border-radius:999px;padding:9px 16px;cursor:pointer;}
+
   @media print{
-    body{background:#fff;}
-    .toolbar,footer{display:none;}
-    .card{break-inside:avoid;box-shadow:none;}
-    button.tool{display:none;}
+    @page{ margin:0.5in; }
+    *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    .modal-bg{ display:none !important; }
+    body{ background:#fff; background-image:none; font-size:11px; }
+    .wrap{ max-width:none; padding:0; }
+    .toolbar, .saved, #importer{ display:none !important; }
+    button.tool{ display:none !important; }
+    a.open, #hosted-open{ display:none !important; }
+    header.mast{ box-shadow:none; break-inside:avoid; }
+    .card, .general, .ref, .ref.full, .url-row, footer{ break-inside:avoid; box-shadow:none; }
+    .card{ border:1px solid #b9b9b9; }
+    select, input[type="date"], input[type="url"]{
+      border:1px solid #999; background:#fff;
+      -webkit-appearance:none; appearance:none;
+    }
+    textarea{
+      border:1px solid #999; background:#fff; min-height:62px;
+    }
+    a{ text-decoration:none; color:#1f3a5f; }
+    footer{ display:block; text-align:left; }
   }
 </style>
 </head>
@@ -266,10 +301,11 @@
   <div class="toolbar">
     <div class="progress" id="progress">—</div>
     <span class="saved" id="saved">Saved ✓</span>
+    <button class="tool" onclick="openAdd()">+ Add firm</button>
     <button class="tool" onclick="exportTxt()">Export notes (.txt)</button>
     <button class="tool" onclick="exportJson()">Backup (.json)</button>
     <button class="tool" onclick="importJson()">Restore backup</button>
-    <button class="tool" onclick="window.print()">Print</button>
+    <button class="tool" onclick="window.print()">Print / Save PDF</button>
     <input type="file" id="importer" accept="application/json" style="display:none">
   </div>
 
@@ -342,6 +378,29 @@
 
   </div>
 
+  <div class="modal-bg" id="add-modal">
+    <div class="modal">
+      <h3>Add a law firm</h3>
+      <div class="mfield"><label>Firm name *</label><input type="text" id="add-name" placeholder="e.g. Smith &amp; Jones, PLLC"></div>
+      <div class="mrow">
+        <div class="mfield"><label>Attorney (optional)</label><input type="text" id="add-atty" placeholder="e.g. Jane Smith"></div>
+        <div class="mfield"><label>Phone</label><input type="text" id="add-phone" placeholder="(828) 555-1212"></div>
+      </div>
+      <div class="mfield"><label>Location</label><input type="text" id="add-loc" placeholder="Asheville · 123 Main St."></div>
+      <div class="mfield"><label>Side</label>
+        <select id="add-side">
+          <option value="home">Your side — can represent you</option>
+          <option value="board">Board / association orientation</option>
+        </select>
+      </div>
+      <div class="mfield"><label>Note (optional)</label><textarea id="add-note" style="min-height:54px;" placeholder="Practice areas, why you're considering them, source of referral…"></textarea></div>
+      <div class="modal-actions">
+        <button class="btn-ghost" onclick="closeAdd()">Cancel</button>
+        <button class="btn-primary" onclick="submitAdd()">Add firm</button>
+      </div>
+    </div>
+  </div>
+
   <footer>
     <div class="rule"></div>
     <b>Status:</b> Demand letter and counsel memo are in draft — nothing has been sent to the Board or provided to any attorney yet. Allen Stahl + Kilbourne was contacted and declined (undisclosed conflict). Next step: contact Craig or Thurman Wilson.<br><br>
@@ -370,6 +429,10 @@ const FIRMS = [
     loc:"Winston-Salem · ~2.5 hrs from Asheville", phone:"3366318500",
     role:["Owner-capable backup","backup"],
     meta:"Represents both homeowners and associations; offers local counsel for out-of-state owners. Solid backup; farthest of the four." },
+  { id:"lloyd", side:"home", name:"James Lloyd Law Office", atty:"James M. Lloyd",
+    loc:"Asheville · 75 Church St. (P.O. Box 948), 28802", phone:"8283501765",
+    role:["Local — verify orientation","local"],
+    meta:"Asheville solo (since 2000) doing condominium / HOA, real-property disputes, and construction litigation. His stated client base is planned communities, condos, HOAs, and developers — i.e., association/developer-leaning. Local and condo-savvy, but confirm he will take the owner side and has no conflict with Sky Club." },
 
   // ---- Board / association side ----
   { id:"vanwinkle", side:"board", name:"Van Winkle Law Firm", atty:"",
@@ -435,11 +498,18 @@ function spineColor(status){ return STATUS_COLOR[status] || STATUS_COLOR.none; }
 
 function cardHTML(f){
   const r = rec(f.id);
-  const phoneEl = f.phone
-    ? `<a class="phone" href="tel:${f.phone}">${fmtPhone(f.phone)}</a>`
-    : `<a class="phone web" href="https://${f.web}" target="_blank" rel="noopener">${f.web}</a>`;
+  let phoneEl = "";
+  if(f.phone){
+    const d = (""+f.phone).replace(/\D/g,"");
+    const disp = d.length===10 ? fmtPhone(d) : f.phone;
+    phoneEl = `<a class="phone" href="tel:${d||f.phone}">${disp}</a>`;
+  } else if(f.web){
+    phoneEl = `<a class="phone web" href="https://${f.web}" target="_blank" rel="noopener">${f.web}</a>`;
+  }
   const opts = STATUSES.map(s=>`<option value="${s[0]}" ${r.status===s[0]?"selected":""}>${s[1]}</option>`).join("");
   const atty = f.atty ? ` <span class="atty">· ${f.atty}</span>` : "";
+  const removeEl = f.custom ? `<button class="firm-remove" onclick="removeFirm('${f.id}')">Remove</button>` : "";
+  const metaLine = f.meta ? `<br>${f.meta}` : "";
   return `
   <div class="card" id="card-${f.id}">
     <div class="spine" id="spine-${f.id}" style="background:${spineColor(r.status)}"></div>
@@ -448,8 +518,8 @@ function cardHTML(f){
         <h3 class="firm-name">${f.name}${atty}</h3>
         ${phoneEl}
       </div>
-      <div class="firm-loc">${f.loc}</div>
-      <p class="meta"><span class="role ${f.role[1]}">${f.role[0]}</span><br>${f.meta}</p>
+      <div class="firm-loc">${f.loc||""} ${removeEl}</div>
+      <p class="meta"><span class="role ${f.role[1]}">${f.role[0]}</span>${metaLine}</p>
       <div class="controls">
         <div class="field">
           <label for="st-${f.id}">Status</label>
@@ -479,8 +549,11 @@ function cardHTML(f){
 }
 
 function render(){
-  document.getElementById("home-list").innerHTML  = FIRMS.filter(f=>f.side==="home").map(cardHTML).join("");
-  document.getElementById("board-list").innerHTML = FIRMS.filter(f=>f.side==="board").map(cardHTML).join("");
+  const customs = store.__customFirms || [];
+  const homeList  = FIRMS.filter(f=>f.side==="home").concat(customs.filter(f=>f.side==="home"));
+  const boardList = FIRMS.filter(f=>f.side==="board").concat(customs.filter(f=>f.side==="board"));
+  document.getElementById("home-list").innerHTML  = homeList.map(cardHTML).join("");
+  document.getElementById("board-list").innerHTML = boardList.map(cardHTML).join("");
   const gn=document.getElementById("general-notes");
   gn.value = store.__general || "";
   gn.addEventListener("input", ()=>{ store.__general=gn.value; save(); });
@@ -534,12 +607,16 @@ function exportTxt(){
   const lines=["SKY CLUB — ATTORNEY CONTACT TRACKER","Generated "+new Date().toLocaleString(),""];
   for(const grp of [["YOUR SIDE — CAN REPRESENT YOU","home"],["BOARD / ASSOCIATION ORIENTATION","board"]]){
     lines.push("="+grp[0]+"=");
-    FIRMS.filter(f=>f.side===grp[1]).forEach(f=>{
+    const customs = store.__customFirms || [];
+    const list = FIRMS.filter(f=>f.side===grp[1]).concat(customs.filter(f=>f.side===grp[1]));
+    list.forEach(f=>{
       const r=rec(f.id);
+      const d=(""+(f.phone||"")).replace(/\D/g,"");
+      const phoneStr = f.phone ? (d.length===10?fmtPhone(d):f.phone) : (f.web||"—");
       lines.push("");
-      lines.push(f.name+(f.atty?" ("+f.atty+")":""));
-      lines.push("  "+f.loc);
-      lines.push("  Phone: "+(f.phone?fmtPhone(f.phone):f.web));
+      lines.push(f.name+(f.atty?" ("+f.atty+")":"")+(f.custom?"  [added by you]":""));
+      lines.push("  "+(f.loc||""));
+      lines.push("  Phone: "+phoneStr);
       lines.push("  Status: "+statusLabel(r.status)+(r.date?"  ·  Contacted "+r.date:""));
       const conf=[]; if(r.checked) conf.push("conflict exists"); if(r.conflict) conf.push("conflict cleared");
       lines.push("  Conflict: "+(conf.length?conf.join(", "):"—"));
@@ -575,6 +652,41 @@ document.getElementById("importer").addEventListener("change", e=>{
   };
   reader.readAsText(file);
 });
+
+function openAdd(){
+  document.getElementById("add-modal").classList.add("open");
+  setTimeout(()=>document.getElementById("add-name").focus(),50);
+}
+function closeAdd(){
+  document.getElementById("add-modal").classList.remove("open");
+  ["name","atty","phone","loc","note"].forEach(k=>{ const el=document.getElementById("add-"+k); if(el) el.value=""; });
+  document.getElementById("add-side").value="home";
+}
+function submitAdd(){
+  const name=(document.getElementById("add-name").value||"").trim();
+  if(!name){ document.getElementById("add-name").focus(); return; }
+  const f={
+    id:"custom-"+Date.now(),
+    side:document.getElementById("add-side").value,
+    name:name,
+    atty:(document.getElementById("add-atty").value||"").trim(),
+    loc:(document.getElementById("add-loc").value||"").trim(),
+    phone:(document.getElementById("add-phone").value||"").trim(),
+    web:"",
+    role:["Added by you","custom"],
+    meta:(document.getElementById("add-note").value||"").trim(),
+    custom:true
+  };
+  if(!store.__customFirms) store.__customFirms=[];
+  store.__customFirms.push(f);
+  save(); render(); closeAdd();
+}
+function removeFirm(id){
+  if(!confirm("Remove this firm and any notes you saved for it?")) return;
+  store.__customFirms=(store.__customFirms||[]).filter(x=>x.id!==id);
+  delete store[id];
+  save(); render();
+}
 
 render();
 </script>
