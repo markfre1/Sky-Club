@@ -301,7 +301,7 @@
       <span><b>Venue:</b> Buncombe County, NC</span>
       <span><b>Excluded:</b> Allen Stahl + Kilbourne (declined — undisclosed conflict)</span>
       <span style="color:var(--brass)"><b>&#9733;&#9733;&#9733;&#9733;&#9733;</b> = my fit rating (more stars = stronger, regardless of distance)</span>
-      <span style="font-family:'Spline Sans Mono',monospace;font-size:11px;color:var(--home);border:1px solid var(--home);padding:1px 7px;border-radius:999px;">v3 · cards auto-sort by status</span>
+      <span style="font-family:'Spline Sans Mono',monospace;font-size:11px;color:var(--home);border:1px solid var(--home);padding:1px 7px;border-radius:999px;">v4 · ratings corrected · auto-sort</span>
     </div>
   </header>
 
@@ -410,7 +410,7 @@
 
   <footer>
     <div class="rule"></div>
-    <b>Status:</b> Demand letter and counsel memo are in draft — nothing has been sent to the Board or provided to any attorney yet. Allen Stahl + Kilbourne was contacted and declined (undisclosed conflict). Next step: contact Craig or Thurman Wilson.<br><br>
+    <b>Status:</b> Demand letter and counsel memo are in draft — nothing sent to the Board yet. <b>Out:</b> Allen Stahl + Kilbourne (conflict) and Craig (mediation only, not taking clients). <b>Engaged:</b> James Lloyd — reviewing the documents (~4 hrs @ $325/hr). <b>Next:</b> parallel-track Robinson &amp; Lawing (336) 631-8500 and Parton (704) 376-4488 for litigation-strength owner-side counsel.<br><br>
     Notes are stored only in this browser on this device. Use “Backup (.json)” to keep a copy or move it to another device.<br>
     This is a personal tracking tool, not legal advice.
   </footer>
@@ -420,26 +420,26 @@
 <script>
 const FIRMS = [
   // ---- Homeowner side ----
-  { id:"craig", side:"home", stars:3, name:"Craig Law Firm, PLLC", atty:"Sam Craig",
+  { id:"craig", side:"home", stars:1, name:"Craig Law Firm, PLLC", atty:"Sam Craig",
     loc:"Asheville · 223 E. Chestnut St.", phone:"8284841595",
-    role:["Strongest local","local"],
-    meta:"Owner-oriented; handles HOA & real-estate disputes and litigates in state and federal court (HOA is one of several areas). Generalist solo — vet responsiveness on the first call." },
+    role:["Declined — unavailable","advisory"],
+    meta:"OUT. Contacted 6/27/2026 — practice is mainly mediation and he is not taking new clients; no response to follow-up message. Keep for the record only." },
   { id:"dunnuck", side:"home", stars:1, name:"Dunnuck Law Firm, PLLC", atty:"Erin Dunnuck",
     loc:"Asheville · One Oak Plaza, Ste. 315", phone:"8283486392",
     role:["Advisory only","advisory"],
     meta:"Real community-association depth, but her practice is built around representing boards. Useful for a document-review second opinion — not lead counsel against a board. Conflict check essential." },
-  { id:"thurman", side:"home", stars:5, name:"Thurman, Wilson, Boutwell & Galvin, P.A.", atty:"",
+  { id:"thurman", side:"home", stars:4, name:"Thurman, Wilson, Boutwell & Galvin, P.A.", atty:"",
     loc:"Charlotte · ~2 hrs from Asheville", phone:"7043774164",
-    role:["Strongest on merits","best"],
-    meta:"Dedicated owner-side community-association litigation with firm depth and trial/appellate experience opposing associations. Distance is the only tradeoff — any NC attorney can appear in Buncombe County." },
-  { id:"robinson", side:"home", stars:4, name:"Robinson & Lawing, LLP", atty:"",
+    role:["Capable — but association-heavy","backup"],
+    meta:"CORRECTED: they explicitly represent \"owners in a dispute with an association,\" but their own site says they represent scores of community associations and have advised HOA boards for decades. Strong litigators (25+ yrs, NC trial and appellate), but NOT an owner-side specialist. Run a hard conflict check and ask directly whether they'll take the owner side." },
+  { id:"robinson", side:"home", stars:5, name:"Robinson & Lawing, LLP", atty:"",
     loc:"Winston-Salem · ~2.5 hrs from Asheville", phone:"3366318500",
-    role:["Owner-capable backup","backup"],
-    meta:"Represents both homeowners and associations; offers local counsel for out-of-state owners. Solid backup; farthest of the four." },
-  { id:"lloyd", side:"home", stars:2, name:"James Lloyd Law Office", atty:"James M. Lloyd",
+    role:["Best owner-side fit","best"],
+    meta:"TOP PICK. Their HOA/COA page speaks directly to your situation: they represent individual homeowners in governance conflicts, including \"a board that has overstepped its authority.\" Decades of real-estate and litigation experience; also serve as local counsel for out-of-state owners. They work both sides, so confirm no conflict with Sky Club." },
+  { id:"lloyd", side:"home", stars:3, name:"James Lloyd Law Office", atty:"James M. Lloyd",
     loc:"Asheville · 75 Church St. (P.O. Box 948), 28802", phone:"8283501765",
-    role:["Local — vet orientation","local"],
-    meta:"Local option worth vetting. Asheville solo (since 2000) doing condominium / HOA, real-property disputes, and construction litigation. His stated client base is planned communities, condos, HOAs, and developers — i.e., association/developer-leaning. Local and condo-savvy, but confirm he will take the owner side and has no conflict with Sky Club." },
+    role:["ENGAGED — review underway","local"],
+    meta:"IN MOTION. Responsive and willing; quoted roughly 4 hrs at $325/hr for the initial review (~$1,300). The only viable local option now that Craig declined and Allen Stahl conflicted out. Caveat: his stated client base is planned communities, condos, HOAs, and developers — association/developer-leaning — so he's not an owner-side specialist. Good for the review; parallel-track the Charlotte/Winston-Salem firms for litigation." },
   { id:"triangle", side:"home", stars:3, name:"Triangle Law Group", atty:"",
     loc:"Raleigh · ~4 hrs from Asheville", phone:"9193010716",
     role:["Owner-side · far","backup"],
@@ -567,8 +567,8 @@ function cardHTML(f){
 const STATUS_RANK = { talk:1, msg:2, sched:3, retain:4, none:5, decline:6 };
 function sortByStatus(list){
   return list
-    .map((f,i)=>({f, i, r:(STATUS_RANK[rec(f.id).status] || 5)}))
-    .sort((a,b)=> a.r - b.r || a.i - b.i)   // ties keep original (star-rated) order
+    .map((f,i)=>({f, i, r:(STATUS_RANK[rec(f.id).status] || 5), s:(f.stars||0)}))
+    .sort((a,b)=> a.r - b.r || b.s - a.s || a.i - b.i)   // status, then stars, then original order
     .map(x=>x.f);
 }
 
