@@ -475,11 +475,11 @@ const FIRMS = [
 ];
 
 const STATUSES = [
-  ["none","Not contacted","--s-none"],
-  ["msg","Left message","--s-msg"],
   ["talk","Spoke — considering","--s-talk"],
+  ["msg","Left message","--s-msg"],
   ["sched","Consult scheduled","--s-sched"],
   ["retain","Retained","--s-retain"],
+  ["none","Not contacted","--s-none"],
   ["decline","Declined / conflict","--s-decline"]
 ];
 const STATUS_COLOR = Object.fromEntries(STATUSES.map(s=>[s[0],getComputedStyle(document.documentElement).getPropertyValue(s[2])]));
